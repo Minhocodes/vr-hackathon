@@ -12,19 +12,28 @@ public class FurnitureItem : MonoBehaviour
     {
         originalPosition = transform.position;
         originalRotation = transform.rotation;
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null) rb.isKinematic = true;
+
+        // Reset záře na začátku
+        SetGlow(Color.clear);
     }
+
+    private bool scrambled = false;
 
     void Update()
     {
-        // Kontroluje kazdy frame kdyz neni umisteno
-        if (!isPlaced)
+        if (!isPlaced && scrambled)
         {
             CheckPlacement();
         }
     }
 
+    
     public void Scramble()
     {
+        scrambled = true;
         isPlaced = false;
         SetGlow(Color.clear);
         float x, z;
@@ -38,7 +47,7 @@ public class FurnitureItem : MonoBehaviour
             x = Random.Range(1.5f, 6.5f);
             z = Random.Range(-6.5f, 6.5f);
         }
-        transform.position = new Vector3(x, 1f, z);
+        transform.position = new Vector3(x, 0f, z);
         transform.rotation = Quaternion.Euler(0, Random.Range(0f, 360f), 0);
     }
 
