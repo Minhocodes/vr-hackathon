@@ -5,7 +5,7 @@ public class FurnitureItem : MonoBehaviour
     [HideInInspector] public Vector3 originalPosition;
     [HideInInspector] public Quaternion originalRotation;
 
-    public float snapDistance = 0.5f;
+    public float snapDistance = 1.5f; // jak blizko musi byt
     private bool isPlaced = false;
 
     void Start()
@@ -14,20 +14,27 @@ public class FurnitureItem : MonoBehaviour
         originalRotation = transform.rotation;
     }
 
+    void Update()
+    {
+        // Kontroluje kazdy frame kdyz neni umisteno
+        if (!isPlaced)
+        {
+            CheckPlacement();
+        }
+    }
+
     public void Scramble()
     {
         isPlaced = false;
-        // Náhodně vyber jednu ze dvou zón
+        SetGlow(Color.clear);
         float x, z;
         if (Random.value > 0.5f)
         {
-            // Levá část místnosti
             x = Random.Range(-6.5f, -1.5f);
             z = Random.Range(-6.5f, 6.5f);
         }
         else
         {
-            // Pravá část místnosti
             x = Random.Range(1.5f, 6.5f);
             z = Random.Range(-6.5f, 6.5f);
         }
@@ -40,6 +47,7 @@ public class FurnitureItem : MonoBehaviour
         float distance = Vector3.Distance(transform.position, originalPosition);
         if (distance < snapDistance)
         {
+            // Automaticky placne na spravne misto!
             transform.position = originalPosition;
             transform.rotation = originalRotation;
             isPlaced = true;
@@ -49,6 +57,8 @@ public class FurnitureItem : MonoBehaviour
         return false;
     }
 
+    public bool IsPlaced() => isPlaced;
+
     void SetGlow(Color color)
     {
         Renderer[] renderers = GetComponentsInChildren<Renderer>();
@@ -56,11 +66,16 @@ public class FurnitureItem : MonoBehaviour
         {
             foreach (Material mat in r.materials)
             {
-                mat.EnableKeyword("_EMISSION");
-                mat.SetColor("_EmissionColor", color * 2f);
+                if (color == Color.clear)
+                {
+                    mat.DisableKeyword("_EMISSION");
+                }
+                else
+                {
+                    mat.EnableKeyword("_EMISSION");
+                    mat.SetColor("_EmissionColor", color * 2f);
+                }
             }
         }
     }
-
-    public bool IsPlaced() => isPlaced;
 }
